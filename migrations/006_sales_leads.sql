@@ -51,6 +51,15 @@ CREATE TABLE IF NOT EXISTS audits (
   created_at timestamptz DEFAULT now()
 );
 
+-- Knowledge Base Documents
+CREATE TABLE IF NOT EXISTS kb_docs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text,
+  content text,
+  tags text[],
+  created_at timestamptz DEFAULT now()
+);
+
 -- Use existing embeddings table for KB & interactions; ensure pgvector extension installed
 -- (supabase template already uses pgvector; if not, create extension)
 CREATE EXTENSION IF NOT EXISTS vector;
