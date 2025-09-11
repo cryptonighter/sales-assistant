@@ -10,6 +10,13 @@ export default async function handler(req, res) {
   try {
     const { to, subject, text, html } = req.body;
 
+    // Check allowed domains
+    const allowedDomains = process.env.ALLOWED_DOMAINS ? process.env.ALLOWED_DOMAINS.split(',') : [];
+    const toDomain = to.split('@')[1];
+    if (allowedDomains.length > 0 && !allowedDomains.includes(toDomain)) {
+      return res.status(403).json({ error: 'Domain not allowed' });
+    }
+
     // Create transporter (use SMTP settings from env)
     const transporter = nodemailer.createTransporter({
       host: process.env.SMTP_HOST,
