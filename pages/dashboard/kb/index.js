@@ -55,6 +55,18 @@ export default function KnowledgeBase() {
     }
   };
 
+  const deleteDoc = async (id) => {
+    if (!confirm('Are you sure you want to delete this document?')) return;
+    try {
+      const res = await fetch(`/api/kb/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchDocs();
+      }
+    } catch (error) {
+      console.error('Failed to delete doc:', error);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -174,8 +186,26 @@ export default function KnowledgeBase() {
               backgroundColor: '#1e1e1e',
               borderRadius: '12px',
               padding: '20px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              position: 'relative'
             }}>
+              <button
+                onClick={() => deleteDoc(doc.id)}
+                style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  backgroundColor: '#ff4444',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem'
+                }}
+              >
+                Delete
+              </button>
               <h3 style={{ marginBottom: '10px', fontSize: '1.2rem', fontWeight: '500' }}>{doc.title}</h3>
               <p style={{ marginBottom: '10px', color: '#bbb' }}>
                 {doc.content.substring(0, 150)}...
