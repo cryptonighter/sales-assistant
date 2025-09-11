@@ -26,6 +26,13 @@ async function callOpenRouter(messages, model = 'openai/gpt-4o-mini') {
 
 // Main orchestrator function
 export async function orchestrateReply(leadId, userMessage) {
+  // Fetch lead info
+  const { data: lead } = await supabaseAdmin
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single();
+
   // Fetch recent interactions for context
   const { data: recentInteractions } = await supabaseAdmin
     .from('interactions')
@@ -36,21 +43,43 @@ export async function orchestrateReply(leadId, userMessage) {
 
   const context = recentInteractions.reverse().map(i => `${i.direction}: ${i.body}`).join('\n');
 
-  // Simple prompt for sales assistant
-  const systemPrompt = `You are a sales assistant. Respond concisely to customer inquiries. Keep replies short, under 150 words. Focus on qualifying leads and scheduling follow-ups.`;
+  // Fetch relevant KB docs (simple: by tags or content match)
+  const { data: kbDocs } = await supabaseAdmin
+    .from('kb_docs')
+    .select('title, content')
+    .limit(3); // For now, get recent
+
+  const kbContext = kbDocs.map(d => `Doc: ${d.title} - ${d.content}`).join('\n');
+
+  // Enhanced prompt for natural conversation
+  const systemPrompt = `You are a helpful sales assistant. Engage in natural, conversational dialogue. Your goals:
+  - Provide value and serve the customer.
+  - Gather information about the lead (e.g., needs, budget, timeline) naturally.
+  - Qualify the lead and move towards closing.
+  - Use provided KB context to inform responses.
+  - Keep replies concise but engaging.
+  - Update lead status based on engagement: new -> contacted -> engaged -> qualified.
+  - If gathering info, ask open-ended questions.
+  - End with a call to action if appropriate.`;
 
   const messages = [
     { role: 'system', content: systemPrompt },
-    { role: 'user', content: `Context:\n${context}\n\nUser: ${userMessage}` }
+    { role: 'user', content: `Lead Info: ${JSON.stringify(lead)}\nKB Context:\n${kbContext}\nConversation:\n${context}\n\nUser: ${userMessage}` }
   ];
 
   // Call AI
   const reply = await callOpenRouter(messages);
 
-  // Determine lead update (simple: if engaged, update status)
+  // Determine lead update
   let leadUpdate = {};
-  if (reply.toLowerCase().includes('interested') || reply.toLowerCase().includes('schedule')) {
-    leadUpdate.status = 'engaged';
+  const lowerReply = reply.toLowerCase();
+  if (lowerReply.includes('interested') || lowerReply.includes('yes') || lowerReply.includes('schedule')) {
+    if (lead.status === 'new') leadUpdate.status = 'contacted';
+    else if (lead.status === 'contacted') leadUpdate.status = 'engaged';
+  }
+  // Gather info: if reply asks questions, assume gathering
+  if (reply.includes('?')) {
+    // Could parse for gathered info, but for now, simple
   }
 
   // Log to audits

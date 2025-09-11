@@ -21,6 +21,23 @@ export default function KnowledgeBase() {
     }
   };
 
+  const generateTags = async () => {
+    if (!newDoc.title || !newDoc.content) return;
+    try {
+      const res = await fetch('/api/generate-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newDoc.title, content: newDoc.content })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNewDoc({ ...newDoc, tags: data.tags.join(', ') });
+      }
+    } catch (error) {
+      console.error('Failed to generate tags:', error);
+    }
+  };
+
   const addDoc = async (e) => {
     e.preventDefault();
     try {
@@ -73,8 +90,9 @@ export default function KnowledgeBase() {
             type="text"
             value={newDoc.tags}
             onChange={(e) => setNewDoc({ ...newDoc, tags: e.target.value })}
-            style={{ width: '100%', padding: '8px' }}
+            style={{ width: '70%', padding: '8px' }}
           />
+          <button type="button" onClick={generateTags} style={{ padding: '8px', marginLeft: '10px' }}>Auto-Generate</button>
         </div>
         <button type="submit" style={{ padding: '10px 20px' }}>Add Document</button>
       </form>
