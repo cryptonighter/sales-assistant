@@ -33,15 +33,19 @@ async function listLeads(status) {
   let url = `${SUPABASE_URL}/rest/v1/leads?select=*`;
   if (status) url += `&status=eq.${status}`;
   const res = await fetch(url, { headers });
-  const data = await res.json();
-  console.table(data.map(l => ({
-    id: l.id,
-    name: `${l.first_name} ${l.last_name}`,
-    email: l.email,
-    phone: l.phone,
-    status: l.status,
-    score: l.score
-  })));
+  if (res.ok) {
+    const data = await res.json();
+    console.table(data.map(l => ({
+      id: l.id,
+      name: `${l.first_name} ${l.last_name}`,
+      email: l.email,
+      phone: l.phone,
+      status: l.status,
+      score: l.score
+    })));
+  } else {
+    console.error("Failed to list leads:", res.status, await res.text());
+  }
 }
 
 async function viewLead(id) {
@@ -49,16 +53,20 @@ async function viewLead(id) {
     fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${id}`, { headers }),
     fetch(`${SUPABASE_URL}/rest/v1/interactions?lead_id=eq.${id}&order=created_at.desc`, { headers }),
   ]);
-  const lead = (await leadRes.json())[0];
-  const interactions = await intRes.json();
+  if (leadRes.ok && intRes.ok) {
+    const lead = (await leadRes.json())[0];
+    const interactions = await intRes.json();
 
-  console.log("\n=== LEAD INFO ===");
-  console.log(lead);
+    console.log("\n=== LEAD INFO ===");
+    console.log(lead);
 
-  console.log("\n=== INTERACTIONS ===");
-  interactions.forEach(i => {
-    console.log(`[${i.created_at}] ${i.direction} via ${i.channel}: ${i.body}`);
-  });
+    console.log("\n=== INTERACTIONS ===");
+    interactions.forEach(i => {
+      console.log(`[${i.created_at}] ${i.direction} via ${i.channel}: ${i.body}`);
+    });
+  } else {
+    console.error("Failed to view lead:", leadRes.status, intRes.status, await leadRes.text(), await intRes.text());
+  }
 }
 
 async function createLead(first, last, email, phone, source="manual") {
@@ -73,8 +81,21 @@ async function createLead(first, last, email, phone, source="manual") {
       source,
     }),
   });
-  const data = await res.json();
-  console.log("Lead created:", data);
+  if (res.ok) {
+    const text = await res.text();
+    if (text) {
+      try {
+        const data = JSON.parse(text);
+        console.log("Lead created:", data);
+      } catch (e) {
+        console.error("Failed to parse JSON:", e);
+      }
+    } else {
+      console.log("Lead created (no response body)");
+    }
+  } else {
+    console.error("Failed to create lead:", res.status, await res.text());
+  }
 }
 
 async function scheduleFollowup(leadId, interval, template) {
@@ -90,8 +111,12 @@ async function scheduleFollowup(leadId, interval, template) {
       next_run_at: nextRun,
     }),
   });
-  const data = await res.json();
-  console.log("Followup scheduled:", data);
+  if (res.ok) {
+    const data = await res.json();
+    console.log("Followup scheduled:", data);
+  } else {
+    console.error("Failed to schedule followup:", res.status, await res.text());
+  }
 }
 
 // parse "3d" or "1w" into ms
