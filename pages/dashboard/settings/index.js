@@ -41,53 +41,108 @@ export default function Settings() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Settings: Lead Info Specifications</h1>
-      <p>Define what information the bot should extract and save from users.</p>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#121212',
+      color: '#ffffff',
+      fontFamily: 'Inter, sans-serif',
+      padding: '20px'
+    }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <h1 style={{ marginBottom: '10px', fontSize: '2rem', fontWeight: '300' }}>Settings: Lead Info Specifications</h1>
+        <p style={{ marginBottom: '30px', color: '#bbb' }}>
+          Define what information the bot should extract and save from users.
+        </p>
 
-      <form onSubmit={addSpec} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '20px' }}>
-        <h2>Add New Specification</h2>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Field Name:</label>
-          <input
-            type="text"
-            value={newSpec.field_name}
-            onChange={(e) => setNewSpec({ ...newSpec, field_name: e.target.value })}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Description:</label>
-          <textarea
-            value={newSpec.description}
-            onChange={(e) => setNewSpec({ ...newSpec, description: e.target.value })}
-            rows="3"
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>
+        <form onSubmit={addSpec} style={{
+          marginBottom: '30px',
+          backgroundColor: '#1e1e1e',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Add New Specification</h2>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Field Name:</label>
             <input
-              type="checkbox"
-              checked={newSpec.required}
-              onChange={(e) => setNewSpec({ ...newSpec, required: e.target.checked })}
+              type="text"
+              value={newSpec.field_name}
+              onChange={(e) => setNewSpec({ ...newSpec, field_name: e.target.value })}
+              required
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '1rem'
+              }}
             />
-            Required
-          </label>
-        </div>
-        <button type="submit" style={{ padding: '10px 20px' }}>Add Specification</button>
-      </form>
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Description:</label>
+            <textarea
+              value={newSpec.description}
+              onChange={(e) => setNewSpec({ ...newSpec, description: e.target.value })}
+              rows="3"
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '1rem',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+              <input
+                type="checkbox"
+                checked={newSpec.required}
+                onChange={(e) => setNewSpec({ ...newSpec, required: e.target.checked })}
+                style={{ marginRight: '8px' }}
+              />
+              Required
+            </label>
+          </div>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: '#bb86fc',
+              color: '#121212',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              transition: 'background-color 0.3s'
+            }}
+          >
+            Add Specification
+          </button>
+        </form>
 
-      <h2>Existing Specifications</h2>
-      <ul>
-        {specs.map(spec => (
-          <li key={spec.id} style={{ marginBottom: '10px', border: '1px solid #ddd', padding: '10px' }}>
-            <strong>{spec.field_name}</strong> {spec.required ? '(Required)' : ''}<br />
-            {spec.description}
-          </li>
-        ))}
-      </ul>
+        <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Existing Specifications</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          {specs.map(spec => (
+            <div key={spec.id} style={{
+              backgroundColor: '#1e1e1e',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}>
+              <h3 style={{ marginBottom: '10px', fontSize: '1.2rem', fontWeight: '500' }}>
+                {spec.field_name} {spec.required ? <span style={{ color: '#ff9800' }}>(Required)</span> : ''}
+              </h3>
+              <p style={{ margin: 0, color: '#bbb' }}>{spec.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

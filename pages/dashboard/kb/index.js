@@ -58,54 +58,138 @@ export default function KnowledgeBase() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Knowledge Base Management</h1>
-      <p>Upload and manage context about your company, products, services, and communication examples.</p>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#121212',
+      color: '#ffffff',
+      fontFamily: 'Inter, sans-serif',
+      padding: '20px'
+    }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <h1 style={{ marginBottom: '10px', fontSize: '2rem', fontWeight: '300' }}>Knowledge Base Management</h1>
+        <p style={{ marginBottom: '30px', color: '#bbb' }}>
+          Upload and manage context about your company, products, services, and communication examples.
+        </p>
 
-      <form onSubmit={addDoc} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '20px' }}>
-        <h2>Add New Document</h2>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Title:</label>
-          <input
-            type="text"
-            value={newDoc.title}
-            onChange={(e) => setNewDoc({ ...newDoc, title: e.target.value })}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Content:</label>
-          <textarea
-            value={newDoc.content}
-            onChange={(e) => setNewDoc({ ...newDoc, content: e.target.value })}
-            rows="10"
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Tags (comma-separated):</label>
-          <input
-            type="text"
-            value={newDoc.tags}
-            onChange={(e) => setNewDoc({ ...newDoc, tags: e.target.value })}
-            style={{ width: '70%', padding: '8px' }}
-          />
-          <button type="button" onClick={generateTags} style={{ padding: '8px', marginLeft: '10px' }}>Auto-Generate</button>
-        </div>
-        <button type="submit" style={{ padding: '10px 20px' }}>Add Document</button>
-      </form>
+        <form onSubmit={addDoc} style={{
+          marginBottom: '30px',
+          backgroundColor: '#1e1e1e',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Add New Document</h2>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Title:</label>
+            <input
+              type="text"
+              value={newDoc.title}
+              onChange={(e) => setNewDoc({ ...newDoc, title: e.target.value })}
+              required
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '1rem'
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Content:</label>
+            <textarea
+              value={newDoc.content}
+              onChange={(e) => setNewDoc({ ...newDoc, content: e.target.value })}
+              rows="10"
+              required
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '1rem',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Tags (comma-separated):</label>
+            <input
+              type="text"
+              value={newDoc.tags}
+              onChange={(e) => setNewDoc({ ...newDoc, tags: e.target.value })}
+              style={{
+                width: '70%',
+                padding: '12px',
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '1rem'
+              }}
+            />
+            <button
+              type="button"
+              onClick={generateTags}
+              style={{
+                backgroundColor: '#03dac6',
+                color: '#121212',
+                border: 'none',
+                padding: '12px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                marginLeft: '10px',
+                transition: 'background-color 0.3s'
+              }}
+            >
+              Auto-Generate
+            </button>
+          </div>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: '#bb86fc',
+              color: '#121212',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              transition: 'background-color 0.3s'
+            }}
+          >
+            Add Document
+          </button>
+        </form>
 
-      <h2>Existing Documents</h2>
-      {docs.map(doc => (
-        <div key={doc.id} style={{ border: '1px solid #ddd', padding: '10px', marginBottom: '10px' }}>
-          <h3>{doc.title}</h3>
-          <p>{doc.content.substring(0, 200)}...</p>
-          <p><strong>Tags:</strong> {doc.tags?.join(', ')}</p>
-          <p><small>Created: {new Date(doc.created_at).toLocaleString()}</small></p>
+        <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Existing Documents</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          {docs.map(doc => (
+            <div key={doc.id} style={{
+              backgroundColor: '#1e1e1e',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}>
+              <h3 style={{ marginBottom: '10px', fontSize: '1.2rem', fontWeight: '500' }}>{doc.title}</h3>
+              <p style={{ marginBottom: '10px', color: '#bbb' }}>
+                {doc.content.substring(0, 150)}...
+              </p>
+              <p style={{ marginBottom: '10px', fontSize: '0.9rem' }}>
+                <strong>Tags:</strong> {doc.tags?.join(', ')}
+              </p>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: '#888' }}>
+                Created: {new Date(doc.created_at).toLocaleString()}
+              </p>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
