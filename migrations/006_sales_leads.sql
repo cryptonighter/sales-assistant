@@ -51,12 +51,29 @@ CREATE TABLE IF NOT EXISTS audits (
   created_at timestamptz DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS kb_docs (
+id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+title text,
+content text,
+tags text[],
+created_at timestamptz DEFAULT now()
+);
+
 -- Knowledge Base Documents
 CREATE TABLE IF NOT EXISTS kb_docs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text,
   content text,
   tags text[],
+  created_at timestamptz DEFAULT now()
+);
+
+-- Info Specifications for Lead Qualification
+CREATE TABLE IF NOT EXISTS info_specs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  field_name text UNIQUE,
+  description text,
+  required boolean DEFAULT false,
   created_at timestamptz DEFAULT now()
 );
 

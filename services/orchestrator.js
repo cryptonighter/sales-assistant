@@ -41,7 +41,8 @@ export async function orchestrateReply(leadId, userMessage) {
     .order('created_at', { ascending: false })
     .limit(5);
 
-  const context = recentInteractions.reverse().map(i => `${i.direction}: ${i.body}`).join('\n');
+  const context = recentInteractions.reverse().map(i => `${i.direction}: ${i.body}`).join('
+');
 
   // Fetch relevant KB docs (simple: by tags or content match)
   const { data: kbDocs } = await supabaseAdmin
@@ -49,12 +50,21 @@ export async function orchestrateReply(leadId, userMessage) {
     .select('title, content')
     .limit(3); // For now, get recent
 
-  const kbContext = kbDocs.map(d => `Doc: ${d.title} - ${d.content}`).join('\n');
+  const kbContext = kbDocs.map(d => `Doc: ${d.title} - ${d.content}`).join('
+');
+
+  // Fetch info specs
+  const { data: infoSpecs } = await supabaseAdmin
+    .from('info_specs')
+    .select('field_name, description, required');
+
+  const specsText = infoSpecs.map(s => `${s.field_name} (${s.required ? 'Required' : 'Optional'}): ${s.description}`).join('
+');
 
   // Enhanced prompt for natural conversation
   const systemPrompt = `You are a helpful sales assistant. Engage in natural, conversational dialogue. Your goals:
   - Provide value and serve the customer.
-  - Gather information about the lead (e.g., needs, budget, timeline) naturally.
+  - Gather the following information about the lead naturally: ${specsText}
   - Qualify the lead and move towards closing.
   - Use provided KB context to inform responses.
   - Keep replies concise but engaging.
