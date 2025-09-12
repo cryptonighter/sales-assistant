@@ -41,6 +41,7 @@ export default function Automations() {
         body: JSON.stringify(newAutomation)
       });
       if (res.ok) {
+        alert('Automation created successfully!');
         setNewAutomation({
           lead_id: '',
           trigger_type: 'manual',
@@ -48,9 +49,12 @@ export default function Automations() {
           schedule_interval: '3d'
         });
         fetchData();
+      } else {
+        alert('Failed to create automation');
       }
     } catch (error) {
       console.error('Failed to create automation:', error);
+      alert('Error creating automation');
     }
   };
 

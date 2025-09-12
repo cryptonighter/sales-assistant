@@ -46,12 +46,12 @@ export default async function handler(req, res) {
 }
 
 function parseInterval(str) {
-  const m = str.match(/(\d+)([dhw])/);
-  if (!m) return 24 * 60 * 60 * 1000; // default 1 day
-  const n = parseInt(m[1]);
-  switch (m[2]) {
-    case 'd': return n * 24 * 60 * 60 * 1000;
-    case 'h': return n * 60 * 60 * 1000;
-    case 'w': return n * 7 * 24 * 60 * 60 * 1000;
-  }
+  const intervals = {
+    '1d': 1 * 24 * 60 * 60 * 1000,
+    '3d': 3 * 24 * 60 * 60 * 1000,
+    '1w': 7 * 24 * 60 * 60 * 1000,
+    '2w': 14 * 24 * 60 * 60 * 1000,
+    '1m': 30 * 24 * 60 * 60 * 1000
+  };
+  return intervals[str] || 24 * 60 * 60 * 1000; // default 1 day
 }
