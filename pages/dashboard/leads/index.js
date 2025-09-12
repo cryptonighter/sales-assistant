@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 export default function LeadsDashboard() {
   const [leads, setLeads] = useState([]);
+  const [suggestions, setSuggestions] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,10 +15,33 @@ export default function LeadsDashboard() {
       const res = await fetch('/api/leads');
       const data = await res.json();
       setLeads(data);
+      // Fetch AI suggestions for each lead
+      const suggPromises = data.map(lead => fetch(`/api/ai-suggestions?leadId=${lead.id}`).then(r => r.json()));
+      const suggResults = await Promise.all(suggPromises);
+      const suggMap = {};
+      data.forEach((lead, idx) => {
+        suggMap[lead.id] = suggResults[idx].suggestion;
+      });
+      setSuggestions(suggMap);
     } catch (error) {
       console.error('Failed to fetch leads:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const applySuggestion = async (leadId, suggestion) => {
+    if (suggestion.action === 'update_status') {
+      try {
+        await fetch(`/api/leads/${leadId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: suggestion.newStatus })
+        });
+        fetchLeads(); // Refresh
+      } catch (error) {
+        console.error('Failed to apply suggestion:', error);
+      }
     }
   };
 

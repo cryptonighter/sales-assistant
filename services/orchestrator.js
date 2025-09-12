@@ -82,14 +82,36 @@ export async function orchestrateReply(leadId, userMessage) {
     // Could parse for gathered info, but for now, simple
   }
 
+  // Calculate and update lead score
+  const score = calculateLeadScore(lead, recentInteractions.length, specs.length);
+  await supabaseAdmin
+    .from('leads')
+    .update({ score: score })
+    .eq('id', leadId);
+
   // Log to audits
   await supabaseAdmin.from('audits').insert([{
     entity_type: 'lead',
     entity_id: leadId,
     actor: 'agent:orchestrator',
     action: 'generate_reply',
-    payload: { userMessage: userMessage, reply: reply, leadUpdate: leadUpdate }
+    payload: { userMessage: userMessage, reply: reply, leadUpdate: leadUpdate, newScore: score }
   }]);
 
   return { reply: reply, leadUpdate: leadUpdate };
+
+function calculateLeadScore(lead, interactionCount, totalSpecs) {
+  let score = 0;
+  // Base score from interactions
+  score += interactionCount * 10;
+  // Score from status progression
+  const statusScores = { new: 0, contacted: 20, engaged: 40, qualified: 60, proposal: 80, closed_won: 100 };
+  score += statusScores[lead.status] || 0;
+  // Score from info completion (if data exists)
+  if (lead.data) {
+    const completedSpecs = Object.keys(lead.data).length;
+    score += (completedSpecs / totalSpecs) * 30;
+  }
+  return Math.min(score, 100); // Cap at 100
+}
 }
