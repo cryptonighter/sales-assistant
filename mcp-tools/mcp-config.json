@@ -12,6 +12,17 @@
         "--profile",
         "vague-peafowl-ueP5fD"
       ]
+    },
+    "mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@magicuidesign/mcp",
+        "--key",
+        "382feb40-80e2-4724-8b90-ce2e8d46603e"
+      ]
     }
   }
 }
