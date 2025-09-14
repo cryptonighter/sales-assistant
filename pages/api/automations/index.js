@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     try {
       const { data: automations, error } = await supabaseAdmin
         .from('followups')
-        .select('*')
+        .select('*, automation_templates(*)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -17,20 +17,21 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     try {
-      const { lead_id, trigger_type, template_id, schedule_interval } = req.body;
+      const { lead_id, trigger_type, template_id, schedule_interval, conditions } = req.body;
 
-      const nextRun = new Date(Date.now() + parseInterval(schedule_interval)).toISOString();
+      const nextRun = schedule_interval ? new Date(Date.now() + parseInterval(schedule_interval)).toISOString() : null;
 
       const { data: automation, error } = await supabaseAdmin
         .from('followups')
         .insert([{
           lead_id,
           trigger_type,
-          template_id,
+          template_id: template_id || null,
           schedule_interval,
-          next_run_at: nextRun
+          next_run_at: nextRun,
+          data: { conditions }
         }])
-        .select()
+        .select('*, automation_templates(*)')
         .single();
 
       if (error) throw error;

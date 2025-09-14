@@ -1,15 +1,47 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  Box,
+  Grid,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  CircularProgress,
+  Alert,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  PlayArrow as PlayArrowIcon,
+  Stop as StopIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
 
 export default function Automations() {
   const [automations, setAutomations] = useState([]);
   const [leads, setLeads] = useState([]);
+  const [templates, setTemplates] = useState([]);
   const [newAutomation, setNewAutomation] = useState({
     lead_id: '',
     trigger_type: 'manual',
-    template_id: 'followup-1',
-    schedule_interval: '3d'
+    template_id: '',
+    schedule_interval: '3d',
+    conditions: {}
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -17,16 +49,20 @@ export default function Automations() {
 
   const fetchData = async () => {
     try {
-      const [autoRes, leadsRes] = await Promise.all([
+      const [autoRes, leadsRes, tempRes] = await Promise.all([
         fetch('/api/automations'),
-        fetch('/api/leads')
+        fetch('/api/leads'),
+        fetch('/api/automations/templates')
       ]);
       const autoData = await autoRes.json();
       const leadsData = await leadsRes.json();
+      const tempData = await tempRes.json();
       setAutomations(autoData);
       setLeads(leadsData);
+      setTemplates(tempData);
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      setError('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -41,186 +77,203 @@ export default function Automations() {
         body: JSON.stringify(newAutomation)
       });
       if (res.ok) {
-        alert('Automation created successfully!');
         setNewAutomation({
           lead_id: '',
           trigger_type: 'manual',
-          template_id: 'followup-1',
-          schedule_interval: '3d'
+          template_id: '',
+          schedule_interval: '3d',
+          conditions: {}
         });
         fetchData();
+        setError(null);
       } else {
-        alert('Failed to create automation');
+        setError('Failed to create automation');
       }
     } catch (error) {
       console.error('Failed to create automation:', error);
-      alert('Error creating automation');
+      setError('Error creating automation');
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  const toggleAutomation = async (id, enabled) => {
+    try {
+      await fetch(`/api/automations/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: !enabled })
+      });
+      fetchData();
+    } catch (error) {
+      console.error('Failed to toggle automation:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#121212',
-      color: '#ffffff',
-      fontFamily: 'Inter, sans-serif',
-      padding: '20px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ marginBottom: '10px', fontSize: '2rem', fontWeight: '300' }}>Automation Center</h1>
-        <p style={{ marginBottom: '30px', color: '#bbb' }}>
-          Schedule follow-ups and track automation performance.
-        </p>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h3" component="h1" gutterBottom>
+        Automation Center
+      </Typography>
+      <Typography variant="body1" color="text.secondary" gutterBottom>
+        Schedule follow-ups, emails, SMS, and track automation performance.
+      </Typography>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
-          <div style={{
-            backgroundColor: '#1e1e1e',
-            borderRadius: '12px',
-            padding: '20px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Create Automation</h2>
-            <form onSubmit={createAutomation}>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Lead:</label>
-                <select
-                  value={newAutomation.lead_id}
-                  onChange={(e) => setNewAutomation({ ...newAutomation, lead_id: e.target.value })}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#2a2a2a',
-                    border: '1px solid #333',
-                    borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '1rem'
-                  }}
-                >
-                  <option value="">Select Lead</option>
-                  {leads.map(lead => (
-                    <option key={lead.id} value={lead.id}>
-                      {lead.first_name} {lead.last_name} ({lead.status})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Trigger:</label>
-                <select
-                  value={newAutomation.trigger_type}
-                  onChange={(e) => setNewAutomation({ ...newAutomation, trigger_type: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#2a2a2a',
-                    border: '1px solid #333',
-                    borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '1rem'
-                  }}
-                >
-                  <option value="manual">Manual</option>
-                  <option value="cadence">Cadence</option>
-                  <option value="event">Event</option>
-                </select>
-              </div>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Template:</label>
-                <select
-                  value={newAutomation.template_id}
-                  onChange={(e) => setNewAutomation({ ...newAutomation, template_id: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#2a2a2a',
-                    border: '1px solid #333',
-                    borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '1rem'
-                  }}
-                >
-                  <option value="followup-1">Follow-up 1</option>
-                  <option value="demo-invite">Demo Invite</option>
-                  <option value="proposal">Proposal</option>
-                </select>
-              </div>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Interval:</label>
-                <input
-                  type="text"
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Create Automation
+              </Typography>
+              <Box component="form" onSubmit={createAutomation} sx={{ mt: 2 }}>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>Lead</InputLabel>
+                  <Select
+                    value={newAutomation.lead_id}
+                    onChange={(e) => setNewAutomation({ ...newAutomation, lead_id: e.target.value })}
+                    required
+                    label="Lead"
+                  >
+                    <MenuItem value="">Select Lead</MenuItem>
+                    {leads.map(lead => (
+                      <MenuItem key={lead.id} value={lead.id}>
+                        {lead.first_name} {lead.last_name} ({lead.status})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>Trigger Type</InputLabel>
+                  <Select
+                    value={newAutomation.trigger_type}
+                    onChange={(e) => setNewAutomation({ ...newAutomation, trigger_type: e.target.value })}
+                    label="Trigger Type"
+                  >
+                    <MenuItem value="manual">Manual</MenuItem>
+                    <MenuItem value="cadence">Cadence</MenuItem>
+                    <MenuItem value="event">Event</MenuItem>
+                    <MenuItem value="status_change">Status Change</MenuItem>
+                    <MenuItem value="time_based">Time Based</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>Template</InputLabel>
+                  <Select
+                    value={newAutomation.template_id}
+                    onChange={(e) => setNewAutomation({ ...newAutomation, template_id: e.target.value })}
+                    label="Template"
+                  >
+                    <MenuItem value="">No Template</MenuItem>
+                    {templates.map(template => (
+                      <MenuItem key={template.id} value={template.id}>
+                        {template.name} ({template.type})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  fullWidth
+                  label="Schedule Interval"
                   value={newAutomation.schedule_interval}
                   onChange={(e) => setNewAutomation({ ...newAutomation, schedule_interval: e.target.value })}
                   placeholder="e.g., 3d, 1w"
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#2a2a2a',
-                    border: '1px solid #333',
-                    borderRadius: '6px',
-                    color: '#ffffff',
-                    fontSize: '1rem'
-                  }}
+                  sx={{ mb: 2 }}
                 />
-              </div>
-              <button
-                type="submit"
-                style={{
-                  backgroundColor: '#bb86fc',
-                  color: '#121212',
-                  border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  transition: 'background-color 0.3s'
-                }}
-              >
-                Create Automation
-              </button>
-            </form>
-          </div>
 
-          <div style={{
-            backgroundColor: '#1e1e1e',
-            borderRadius: '12px',
-            padding: '20px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Active Automations</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
-              {automations.map(auto => (
-                <div key={auto.id} style={{
-                  backgroundColor: '#2a2a2a',
-                  borderRadius: '8px',
-                  padding: '15px'
-                }}>
-                  <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem' }}>
-                    {auto.template_id} for Lead {auto.lead_id.slice(0, 8)}...
-                  </h3>
-                  <p style={{ margin: '0 0 8px 0', color: '#bbb' }}>
-                    Trigger: {auto.trigger_type}
-                  </p>
-                  <p style={{ margin: '0 0 8px 0', color: '#bbb' }}>
-                    Next Run: {new Date(auto.next_run_at).toLocaleString()}
-                  </p>
-                  <span style={{
-                    backgroundColor: auto.enabled ? '#4caf50' : '#ff9800',
-                    color: '#ffffff',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '0.8rem'
-                  }}>
-                    {auto.enabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Advanced Conditions</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <TextField
+                      fullWidth
+                      label="Conditions (JSON)"
+                      multiline
+                      rows={3}
+                      value={JSON.stringify(newAutomation.conditions, null, 2)}
+                      onChange={(e) => setNewAutomation({ ...newAutomation, conditions: JSON.parse(e.target.value || '{}') })}
+                      placeholder='{"status": "qualified"}'
+                    />
+                  </AccordionDetails>
+                </Accordion>
+
+                <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+                  Create Automation
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Active Automations
+              </Typography>
+              <Grid container spacing={2}>
+                {automations.map(auto => (
+                  <Grid item xs={12} sm={6} key={auto.id}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography variant="h6">
+                            {auto.automation_templates?.name || 'Custom'} for Lead {auto.lead_id.slice(0, 8)}...
+                          </Typography>
+                          <Box>
+                            <Tooltip title={auto.enabled ? 'Disable' : 'Enable'}>
+                              <IconButton onClick={() => toggleAutomation(auto.id, auto.enabled)}>
+                                {auto.enabled ? <StopIcon /> : <PlayArrowIcon />}
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit">
+                              <IconButton>
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                              <IconButton>
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          Trigger: {auto.trigger_type}
+                        </Typography>
+                        {auto.next_run_at && (
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            Next Run: {new Date(auto.next_run_at).toLocaleString()}
+                          </Typography>
+                        )}
+                        <Chip
+                          label={auto.enabled ? 'Enabled' : 'Disabled'}
+                          color={auto.enabled ? 'success' : 'warning'}
+                          size="small"
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Container>
   );
 }
