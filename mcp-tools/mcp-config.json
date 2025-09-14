@@ -23,6 +23,17 @@
         "--key",
         "382feb40-80e2-4724-8b90-ce2e8d46603e"
       ]
+    },
+    "web-eval-agent": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@samihalawa/web-eval-agent",
+        "--key",
+        "382feb40-80e2-4724-8b90-ce2e8d46603e"
+      ]
     }
   }
 }
