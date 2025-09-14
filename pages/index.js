@@ -14,14 +14,26 @@ import {
   Chip,
   CircularProgress,
   Avatar,
+  AppBar,
+  Toolbar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Divider,
 } from '@mui/material';
 import {
+  Menu as MenuIcon,
   Chat as ChatIcon,
   ArrowBack as ArrowBackIcon,
   Send as SendIcon,
   People as PeopleIcon,
   Analytics as AnalyticsIcon,
   LibraryBooks as LibraryBooksIcon,
+  Dashboard as DashboardIcon,
+  Settings as SettingsIcon,
+  Business as BusinessIcon,
 } from '@mui/icons-material';
 
 export default function Home() {
@@ -31,6 +43,7 @@ export default function Home() {
   const [input, setInput] = useState('');
   const [leadId, setLeadId] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -108,112 +121,146 @@ export default function Home() {
     );
   }
 
+  const menuItems = [
+    { text: 'Dashboard', icon: <DashboardIcon />, href: '/' },
+    { text: 'Leads', icon: <PeopleIcon />, href: '/dashboard/leads' },
+    { text: 'Analytics', icon: <AnalyticsIcon />, href: '/dashboard/analytics' },
+    { text: 'Automations', icon: <BusinessIcon />, href: '/dashboard/automations' },
+    { text: 'Knowledge Base', icon: <LibraryBooksIcon />, href: '/dashboard/kb' },
+    { text: 'Settings', icon: <SettingsIcon />, href: '/dashboard/settings' },
+  ];
+
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h3" component="h1" gutterBottom>
-        Sales Assistant Dashboard
-      </Typography>
-
-      {/* Quick Stats */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" color="primary">
-                {stats.totalInteractions || 0}
-              </Typography>
-              <Typography variant="body2">Total Interactions</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" color="secondary">
-                {leads.length}
-              </Typography>
-              <Typography variant="body2">Total Leads</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" sx={{ color: '#ff9800' }}>
-                {stats.responseRate || '0%'}
-              </Typography>
-              <Typography variant="body2">Response Rate</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Recent Leads */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Recent Leads
+    <Box sx={{ display: 'flex' }}>
+      {/* App Bar */}
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={() => setSidebarOpen(true)}
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap component="div">
+            Sales Assistant
           </Typography>
-          <Grid container spacing={2}>
-            {leads.map(lead => (
-              <Grid item xs={12} sm={6} md={4} key={lead.id}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Avatar sx={{ mr: 2 }}>
-                        {lead.first_name[0]}{lead.last_name[0]}
-                      </Avatar>
-                      <Typography variant="h6">
-                        {lead.first_name} {lead.last_name}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      {lead.email}
-                    </Typography>
-                    <Chip
-                      label={lead.status}
-                      color={
-                        lead.status === 'qualified' ? 'success' :
-                        lead.status === 'engaged' ? 'warning' : 'primary'
-                      }
-                      size="small"
-                    />
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
+        </Toolbar>
+      </AppBar>
 
-      {/* Navigation */}
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <Button
-          variant="contained"
-          startIcon={<PeopleIcon />}
-          component={Link}
-          href="/dashboard/leads"
-        >
-          View All Leads
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={<LibraryBooksIcon />}
-          component={Link}
-          href="/dashboard/kb"
-        >
-          Manage KB
-        </Button>
-        <Button
-          variant="contained"
-          sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#e68900' } }}
-          startIcon={<AnalyticsIcon />}
-          component={Link}
-          href="/dashboard/analytics"
-        >
-          View Analytics
-        </Button>
+      {/* Sidebar */}
+      <Drawer
+        variant="temporary"
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        sx={{
+          width: 240,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: 240,
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Toolbar />
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {menuItems.map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton component={Link} href={item.href} onClick={() => setSidebarOpen(false)}>
+                  <ListItemIcon>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+        </Box>
+      </Drawer>
+
+      {/* Main Content */}
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar />
+        <Container maxWidth="xl">
+          <Typography variant="h3" component="h1" gutterBottom>
+            Dashboard Overview
+          </Typography>
+
+          {/* Quick Stats */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12} sm={4}>
+              <Card>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" color="primary">
+                    {stats.totalInteractions || 0}
+                  </Typography>
+                  <Typography variant="body2">Total Interactions</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Card>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" color="secondary">
+                    {leads.length}
+                  </Typography>
+                  <Typography variant="body2">Total Leads</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Card>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ color: '#ff9800' }}>
+                    {stats.responseRate || '0%'}
+                  </Typography>
+                  <Typography variant="body2">Response Rate</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {/* Recent Leads */}
+          <Card sx={{ mb: 4 }}>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Recent Leads
+              </Typography>
+              <Grid container spacing={2}>
+                {leads.map(lead => (
+                  <Grid item xs={12} sm={6} md={4} key={lead.id}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <Avatar sx={{ mr: 2 }}>
+                            {lead.first_name[0]}{lead.last_name[0]}
+                          </Avatar>
+                          <Typography variant="h6">
+                            {lead.first_name} {lead.last_name}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          {lead.email}
+                        </Typography>
+                        <Chip
+                          label={lead.status}
+                          color={
+                            lead.status === 'qualified' ? 'success' :
+                            lead.status === 'engaged' ? 'warning' : 'primary'
+                          }
+                          size="small"
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        </Container>
       </Box>
 
       {/* Floating Chat Button */}
@@ -287,6 +334,6 @@ export default function Home() {
           </Box>
         </Box>
       </Drawer>
-    </Container>
+    </Box>
   );
 }

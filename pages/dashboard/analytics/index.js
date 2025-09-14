@@ -1,4 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  Box,
+  CircularProgress,
+} from '@mui/material';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 export default function Analytics() {
   const [stats, setStats] = useState({});
@@ -20,83 +50,118 @@ export default function Analytics() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   const funnelStages = ['new', 'contacted', 'engaged', 'qualified', 'proposal', 'closed_won', 'closed_lost'];
+  const funnelData = funnelStages.map(stage => stats.funnel?.[stage] || 0);
+
+  const chartData = {
+    labels: funnelStages.map(stage => stage.replace('_', ' ').toUpperCase()),
+    datasets: [
+      {
+        label: 'Leads',
+        data: funnelData,
+        backgroundColor: 'rgba(187, 134, 252, 0.6)',
+        borderColor: 'rgba(187, 134, 252, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        borderSkipped: false,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Lead Funnel Overview',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'white',
+        },
+      },
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'white',
+        },
+      },
+    },
+  };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#121212',
-      color: '#ffffff',
-      fontFamily: 'Inter, sans-serif',
-      padding: '20px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ marginBottom: '30px', fontSize: '2rem', fontWeight: '300' }}>Analytics Dashboard</h1>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h3" component="h1" gutterBottom>
+        Analytics Dashboard
+      </Typography>
 
-        <div style={{
-          backgroundColor: '#1e1e1e',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '30px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Lead Funnel</h2>
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-            {funnelStages.map(stage => (
-              <div key={stage} style={{
-                textAlign: 'center',
-                backgroundColor: '#2a2a2a',
-                borderRadius: '8px',
-                padding: '20px',
-                minWidth: '120px',
-                flex: '1'
-              }}>
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', fontWeight: '500' }}>
-                  {stage.replace('_', ' ').toUpperCase()}
-                </h3>
-                <p style={{ margin: 0, fontSize: '2rem', fontWeight: '300', color: '#bb86fc' }}>
-                  {stats.funnel?.[stage] || 0}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Lead Funnel Chart */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Lead Funnel
+          </Typography>
+          <Box sx={{ height: 400 }}>
+            <Bar data={chartData} options={chartOptions} />
+          </Box>
+        </CardContent>
+      </Card>
 
-        <div style={{
-          backgroundColor: '#1e1e1e',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Key Metrics</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-            <div style={{
-              backgroundColor: '#2a2a2a',
-              borderRadius: '8px',
-              padding: '20px',
-              textAlign: 'center'
-            }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', fontWeight: '500' }}>Total Interactions</h3>
-              <p style={{ margin: 0, fontSize: '2rem', fontWeight: '300', color: '#03dac6' }}>
-                {stats.totalInteractions || 0}
-              </p>
-            </div>
-            <div style={{
-              backgroundColor: '#2a2a2a',
-              borderRadius: '8px',
-              padding: '20px',
-              textAlign: 'center'
-            }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', fontWeight: '500' }}>Response Rate</h3>
-              <p style={{ margin: 0, fontSize: '2rem', fontWeight: '300', color: '#ff9800' }}>
-                {stats.responseRate || '0%'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* Key Metrics */}
+      <Card>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Key Metrics
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={4}>
+              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.800', borderRadius: 2 }}>
+                <Typography variant="h4" color="secondary">
+                  {stats.totalInteractions || 0}
+                </Typography>
+                <Typography variant="body1">Total Interactions</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.800', borderRadius: 2 }}>
+                <Typography variant="h4" sx={{ color: '#ff9800' }}>
+                  {stats.responseRate || '0%'}
+                </Typography>
+                <Typography variant="body1">Response Rate</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.800', borderRadius: 2 }}>
+                <Typography variant="h4" color="primary">
+                  {stats.conversionRate || '0%'}
+                </Typography>
+                <Typography variant="body1">Conversion Rate</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Container>
   );
 }
