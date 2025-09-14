@@ -1,14 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Chip,
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Avatar,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+  Alert,
+  Collapse,
+} from '@mui/material';
+import {
+  Visibility as VisibilityIcon,
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  Lightbulb as LightbulbIcon,
+  Check as CheckIcon,
+} from '@mui/icons-material';
 
 export default function LeadsDashboard() {
   const [leads, setLeads] = useState([]);
+  const [filteredLeads, setFilteredLeads] = useState([]);
   const [suggestions, setSuggestions] = useState({});
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [expandedSuggestions, setExpandedSuggestions] = useState({});
 
   useEffect(() => {
     fetchLeads();
   }, []);
+
+  useEffect(() => {
+    filterLeads();
+  }, [leads, searchTerm, statusFilter]);
 
   const fetchLeads = async () => {
     try {
@@ -30,6 +73,20 @@ export default function LeadsDashboard() {
     }
   };
 
+  const filterLeads = () => {
+    let filtered = leads;
+    if (searchTerm) {
+      filtered = filtered.filter(lead =>
+        `${lead.first_name} ${lead.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    if (statusFilter) {
+      filtered = filtered.filter(lead => lead.status === statusFilter);
+    }
+    setFilteredLeads(filtered);
+  };
+
   const applySuggestion = async (leadId, suggestion) => {
     if (suggestion.action === 'update_status') {
       try {
@@ -45,78 +102,154 @@ export default function LeadsDashboard() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  const toggleSuggestion = (leadId) => {
+    setExpandedSuggestions(prev => ({
+      ...prev,
+      [leadId]: !prev[leadId]
+    }));
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#121212',
-      color: '#ffffff',
-      fontFamily: 'Inter, sans-serif',
-      padding: '20px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ marginBottom: '30px', fontSize: '2rem', fontWeight: '300' }}>Leads Dashboard</h1>
-        <div style={{
-          backgroundColor: '#1e1e1e',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          overflowX: 'auto'
-        }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #333' }}>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '500' }}>Name</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '500' }}>Email</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '500' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '500' }}>Score</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '500' }}>Last Contact</th>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '500' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map(lead => (
-                <tr key={lead.id} style={{ borderBottom: '1px solid #333' }}>
-                  <td style={{ padding: '12px' }}>
-                    {lead.first_name} {lead.last_name}
-                  </td>
-                  <td style={{ padding: '12px' }}>{lead.email}</td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{
-                      backgroundColor: lead.status === 'qualified' ? '#4caf50' : lead.status === 'engaged' ? '#ff9800' : '#2196f3',
-                      color: '#ffffff',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '0.8rem'
-                    }}>
-                      {lead.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px' }}>{lead.score}</td>
-                  <td style={{ padding: '12px' }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h3" component="h1" gutterBottom>
+        Leads Dashboard
+      </Typography>
+
+      {/* Filters */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Search leads"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Filter by Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  label="Filter by Status"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="new">New</MenuItem>
+                  <MenuItem value="contacted">Contacted</MenuItem>
+                  <MenuItem value="engaged">Engaged</MenuItem>
+                  <MenuItem value="qualified">Qualified</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Leads Table */}
+      <Card>
+        <TableContainer component={Paper} sx={{ bgcolor: 'background.paper' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Lead</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Score</TableCell>
+                <TableCell>Last Contact</TableCell>
+                <TableCell>AI Suggestion</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredLeads.map(lead => (
+                <TableRow key={lead.id} hover>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar sx={{ mr: 2 }}>
+                        {lead.first_name[0]}{lead.last_name[0]}
+                      </Avatar>
+                      <Typography variant="body1">
+                        {lead.first_name} {lead.last_name}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{lead.email}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={lead.status}
+                      color={
+                        lead.status === 'qualified' ? 'success' :
+                        lead.status === 'engaged' ? 'warning' : 'primary'
+                      }
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>{lead.score}</TableCell>
+                  <TableCell>
                     {new Date(lead.updated_at).toLocaleDateString()}
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    <Link href={`/dashboard/leads/${lead.id}`}>
-                      <button style={{
-                        backgroundColor: '#bb86fc',
-                        color: '#121212',
-                        border: 'none',
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                        transition: 'background-color 0.3s'
-                      }}>View Details</button>
-                    </Link>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell>
+                    {suggestions[lead.id] && (
+                      <Box>
+                        <Tooltip title="View AI Suggestion">
+                          <IconButton
+                            size="small"
+                            onClick={() => toggleSuggestion(lead.id)}
+                            color="secondary"
+                          >
+                            <LightbulbIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Collapse in={expandedSuggestions[lead.id]}>
+                          <Box sx={{ mt: 1, p: 1, bgcolor: 'grey.800', borderRadius: 1 }}>
+                            <Typography variant="body2" gutterBottom>
+                              {suggestions[lead.id].description}
+                            </Typography>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<CheckIcon />}
+                              onClick={() => applySuggestion(lead.id, suggestions[lead.id])}
+                            >
+                              Apply
+                            </Button>
+                          </Box>
+                        </Collapse>
+                      </Box>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title="View Details">
+                      <IconButton
+                        component={Link}
+                        href={`/dashboard/leads/${lead.id}`}
+                        color="primary"
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Card>
+    </Container>
   );
 }
