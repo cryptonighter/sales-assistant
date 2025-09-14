@@ -1,5 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box,
+  Drawer,
+  TextField,
+  IconButton,
+  Chip,
+  CircularProgress,
+  Avatar,
+} from '@mui/material';
+import {
+  Chat as ChatIcon,
+  ArrowBack as ArrowBackIcon,
+  Send as SendIcon,
+  People as PeopleIcon,
+  Analytics as AnalyticsIcon,
+  LibraryBooks as LibraryBooksIcon,
+} from '@mui/icons-material';
 
 export default function Home() {
   const [leads, setLeads] = useState([]);
@@ -7,7 +30,7 @@ export default function Home() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [leadId, setLeadId] = useState(null);
-  const [chatExpanded, setChatExpanded] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,227 +92,201 @@ export default function Home() {
     }
   };
 
-  if (loading) return <div style={{ backgroundColor: '#121212', color: '#ffffff', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          bgcolor: 'background.default',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#121212',
-      color: '#ffffff',
-      fontFamily: 'Inter, sans-serif',
-      display: 'flex'
-    }}>
-      {/* Main Dashboard */}
-      <div style={{ flex: 1, padding: '20px' }}>
-        <h1 style={{ marginBottom: '30px', fontSize: '2rem', fontWeight: '300' }}>Sales Assistant Dashboard</h1>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h3" component="h1" gutterBottom>
+        Sales Assistant Dashboard
+      </Typography>
 
-        {/* Quick Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-          <div style={{
-            backgroundColor: '#1e1e1e',
-            borderRadius: '12px',
-            padding: '20px',
-            textAlign: 'center',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '2rem', fontWeight: '300', color: '#bb86fc' }}>
-              {stats.totalInteractions || 0}
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>Total Interactions</p>
-          </div>
-          <div style={{
-            backgroundColor: '#1e1e1e',
-            borderRadius: '12px',
-            padding: '20px',
-            textAlign: 'center',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '2rem', fontWeight: '300', color: '#03dac6' }}>
-              {leads.length}
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>Total Leads</p>
-          </div>
-          <div style={{
-            backgroundColor: '#1e1e1e',
-            borderRadius: '12px',
-            padding: '20px',
-            textAlign: 'center',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '2rem', fontWeight: '300', color: '#ff9800' }}>
-              {stats.responseRate || '0%'}
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>Response Rate</p>
-          </div>
-        </div>
+      {/* Quick Stats */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={4}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" color="primary">
+                {stats.totalInteractions || 0}
+              </Typography>
+              <Typography variant="body2">Total Interactions</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" color="secondary">
+                {leads.length}
+              </Typography>
+              <Typography variant="body2">Total Leads</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" sx={{ color: '#ff9800' }}>
+                {stats.responseRate || '0%'}
+              </Typography>
+              <Typography variant="body2">Response Rate</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-        {/* Recent Leads */}
-        <div style={{
-          backgroundColor: '#1e1e1e',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          marginBottom: '30px'
-        }}>
-          <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', fontWeight: '300' }}>Recent Leads</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
+      {/* Recent Leads */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Recent Leads
+          </Typography>
+          <Grid container spacing={2}>
             {leads.map(lead => (
-              <div key={lead.id} style={{
-                backgroundColor: '#2a2a2a',
-                borderRadius: '8px',
-                padding: '15px'
-              }}>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem' }}>{lead.first_name} {lead.last_name}</h3>
-                <p style={{ margin: '0 0 8px 0', color: '#bbb' }}>{lead.email}</p>
-                <span style={{
-                  backgroundColor: lead.status === 'qualified' ? '#4caf50' : lead.status === 'engaged' ? '#ff9800' : '#2196f3',
-                  color: '#ffffff',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  fontSize: '0.8rem'
-                }}>
-                  {lead.status}
-                </span>
-              </div>
+              <Grid item xs={12} sm={6} md={4} key={lead.id}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Avatar sx={{ mr: 2 }}>
+                        {lead.first_name[0]}{lead.last_name[0]}
+                      </Avatar>
+                      <Typography variant="h6">
+                        {lead.first_name} {lead.last_name}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {lead.email}
+                    </Typography>
+                    <Chip
+                      label={lead.status}
+                      color={
+                        lead.status === 'qualified' ? 'success' :
+                        lead.status === 'engaged' ? 'warning' : 'primary'
+                      }
+                      size="small"
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
             ))}
-          </div>
-        </div>
+          </Grid>
+        </CardContent>
+      </Card>
 
-        {/* Navigation */}
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <Link href="/dashboard/leads">
-            <button style={{
-              backgroundColor: '#bb86fc',
-              color: '#121212',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1rem',
-              transition: 'background-color 0.3s'
-            }}>View All Leads</button>
-          </Link>
-          <Link href="/dashboard/kb">
-            <button style={{
-              backgroundColor: '#03dac6',
-              color: '#121212',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1rem',
-              transition: 'background-color 0.3s'
-            }}>Manage KB</button>
-          </Link>
-          <Link href="/dashboard/analytics">
-            <button style={{
-              backgroundColor: '#ff9800',
-              color: '#121212',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1rem',
-              transition: 'background-color 0.3s'
-            }}>View Analytics</button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Collapsible Webchat */}
-      <div style={{
-        width: chatExpanded ? '400px' : '60px',
-        backgroundColor: '#1e1e1e',
-        borderLeft: '1px solid #333',
-        transition: 'width 0.3s',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <button
-          onClick={() => setChatExpanded(!chatExpanded)}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            left: '10px',
-            backgroundColor: '#bb86fc',
-            color: '#121212',
-            border: 'none',
-            borderRadius: '50%',
-            width: '40px',
-            height: '40px',
-            cursor: 'pointer',
-            fontSize: '1.2rem',
-            zIndex: 10
-          }}
+      {/* Navigation */}
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <Button
+          variant="contained"
+          startIcon={<PeopleIcon />}
+          component={Link}
+          href="/dashboard/leads"
         >
-          {chatExpanded ? '←' : '💬'}
-        </button>
+          View All Leads
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<LibraryBooksIcon />}
+          component={Link}
+          href="/dashboard/kb"
+        >
+          Manage KB
+        </Button>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#e68900' } }}
+          startIcon={<AnalyticsIcon />}
+          component={Link}
+          href="/dashboard/analytics"
+        >
+          View Analytics
+        </Button>
+      </Box>
 
-        {chatExpanded && (
-          <div style={{ padding: '20px', paddingTop: '80px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ marginBottom: '15px', fontSize: '1.2rem', fontWeight: '300' }}>Web Chat</h3>
-            <div style={{
-              flex: 1,
-              backgroundColor: '#2a2a2a',
-              borderRadius: '8px',
-              padding: '15px',
-              marginBottom: '15px',
-              overflowY: 'auto',
-              maxHeight: '400px'
-            }}>
-              {messages.map((msg, idx) => (
-                <div key={idx} style={{
-                  marginBottom: '10px',
-                  textAlign: msg.sender === 'user' ? 'right' : 'left'
-                }}>
-                  <div style={{
-                    display: 'inline-block',
-                    backgroundColor: msg.sender === 'user' ? '#bb86fc' : '#333',
-                    color: msg.sender === 'user' ? '#121212' : '#ffffff',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    maxWidth: '80%'
-                  }}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #333',
-                  borderRadius: '6px',
-                  color: '#ffffff',
-                  fontSize: '0.9rem'
-                }}
-                placeholder="Type your message..."
-              />
-              <button
-                onClick={sendMessage}
-                style={{
-                  backgroundColor: '#03dac6',
-                  color: '#121212',
-                  border: 'none',
-                  padding: '10px 15px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem'
+      {/* Floating Chat Button */}
+      <IconButton
+        onClick={() => setChatOpen(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+          '&:hover': { bgcolor: 'primary.dark' },
+        }}
+        size="large"
+      >
+        <ChatIcon />
+      </IconButton>
+
+      {/* Chat Drawer */}
+      <Drawer
+        anchor="right"
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+      >
+        <Box sx={{ width: 350, p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <IconButton onClick={() => setChatOpen(false)}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ ml: 1 }}>
+              Web Chat
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1, overflowY: 'auto', mb: 2, p: 1, bgcolor: 'grey.800', borderRadius: 1 }}>
+            {messages.map((msg, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  mb: 1,
+                  textAlign: msg.sender === 'user' ? 'right' : 'left',
                 }}
               >
-                Send
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+                <Box
+                  sx={{
+                    display: 'inline-block',
+                    bgcolor: msg.sender === 'user' ? 'primary.main' : 'grey.700',
+                    color: msg.sender === 'user' ? 'primary.contrastText' : 'text.primary',
+                    p: 1,
+                    borderRadius: 2,
+                    maxWidth: '80%',
+                  }}
+                >
+                  <Typography variant="body2">{msg.text}</Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+              placeholder="Type your message..."
+              variant="outlined"
+            />
+            <IconButton onClick={sendMessage} color="primary">
+              <SendIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Drawer>
+    </Container>
   );
 }
